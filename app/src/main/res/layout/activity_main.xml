@@ -22,6 +22,7 @@
         android:layout_gravity="bottom|center"
         android:layout_margin="@dimen/fab_margin"
         android:clickable="true"
+        android:onClick="StartAndPauseChronometer"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:srcCompat="@android:drawable/ic_media_play" />
@@ -33,6 +34,7 @@
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
         android:clickable="true"
+        android:onClick="ResetChronometer"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:srcCompat="@android:drawable/ic_menu_revert" />
@@ -70,7 +72,7 @@
         app:layout_constraintTop_toBottomOf="@+id/toolbar" />
 
     <TextView
-        android:id="@+id/textView_km"
+        android:id="@+id/textView_distance"
         android:layout_width="204dp"
         android:layout_height="49dp"
         android:layout_marginStart="16dp"
@@ -92,7 +94,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView_km" />
+        app:layout_constraintTop_toBottomOf="@+id/textView_distance" />
 
     <TextView
         android:id="@+id/textView_vitesse"
@@ -105,7 +107,7 @@
         app:layout_constraintBottom_toTopOf="@+id/lbl_chrono"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView_km" />
+        app:layout_constraintTop_toBottomOf="@+id/textView_distance" />
 
     <TextView
         android:id="@+id/lbl_distance"
@@ -113,7 +115,7 @@
         android:layout_height="17dp"
         android:layout_marginStart="24dp"
         android:text="Distance"
-        app:layout_constraintBottom_toTopOf="@+id/textView_km"
+        app:layout_constraintBottom_toTopOf="@+id/textView_distance"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
