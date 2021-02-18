@@ -14,6 +14,10 @@ import android.widget.Chronometer
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.jjoe64.graphview.GraphView
+import com.jjoe64.graphview.series.DataPoint
+import com.jjoe64.graphview.series.LineGraphSeries
+//import org.junit.experimental.theories.DataPoint
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
@@ -91,9 +95,20 @@ class MainActivity : AppCompatActivity() {
         }, 2000, 2000)
 
 
+        // TEST GRAPHIQUE
+        val graph: GraphView = findViewById(R.id.graph)
 
+        graph.addSeries(LineGraphSeries(
+                arrayOf(
+                DataPoint(0.toDouble(), 1.toDouble()),
+                DataPoint(1.toDouble(), 5.toDouble()),
+                DataPoint(2.toDouble(), 3.toDouble()),
+                DataPoint(3.toDouble(), 2.toDouble()),
+                DataPoint(4.toDouble(), 6.toDouble()))))
 
     }
+
+
 
     private fun GetUriForButtons() {
         val uri_play = "@android:drawable/ic_media_play" // where myresource (without the extension) is the file
@@ -205,7 +220,7 @@ class MainActivity : AppCompatActivity() {
     val mHandler = object : Handler() {
         override fun handleMessage(msg: Message) {
 
-            if (running = true) {
+            if (running) {
                 Log.e("CLODO", "Dans le handler")
 
                 val bundle = msg.data

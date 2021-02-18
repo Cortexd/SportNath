@@ -1,3 +1,5 @@
 <resources>
     <dimen name="fab_margin">16dp</dimen>
+    <dimen name="longueur_des_texte">180dp</dimen>
+    <dimen name="hauteur_des_textes">51dp</dimen>
 </resources>
