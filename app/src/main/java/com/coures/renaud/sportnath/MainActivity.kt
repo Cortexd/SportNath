@@ -1,5 +1,7 @@
 package com.coures.renaud.sportnath
 
+//import org.junit.experimental.theories.DataPoint
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.os.Bundle
@@ -16,8 +18,8 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.jjoe64.graphview.GraphView
 import com.jjoe64.graphview.series.DataPoint
+import com.jjoe64.graphview.series.DataPointInterface
 import com.jjoe64.graphview.series.LineGraphSeries
-//import org.junit.experimental.theories.DataPoint
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
@@ -49,6 +51,10 @@ class MainActivity : AppCompatActivity() {
     // Interface
     var textview_distance : TextView? = null
     var textview_vitesse : TextView? = null
+
+    // Graphique
+    var mSeries2 : LineGraphSeries<DataPointInterface> = LineGraphSeries<DataPointInterface>()
+    var graph2LastXValue = 5.0
 
    // Bluetooth
     val MESSAGE_READ = 9999
@@ -97,14 +103,11 @@ class MainActivity : AppCompatActivity() {
 
         // TEST GRAPHIQUE
         val graph: GraphView = findViewById(R.id.graph)
-
-        graph.addSeries(LineGraphSeries(
-                arrayOf(
-                DataPoint(0.toDouble(), 1.toDouble()),
-                DataPoint(1.toDouble(), 5.toDouble()),
-                DataPoint(2.toDouble(), 3.toDouble()),
-                DataPoint(3.toDouble(), 2.toDouble()),
-                DataPoint(4.toDouble(), 6.toDouble()))))
+        //mSeries2 = LineGraphSeries<DataPointInterface>()
+        graph.addSeries(mSeries2)
+        graph.viewport.isXAxisBoundsManual = true
+        graph.viewport.setMinX(0.0)
+        graph.viewport.setMaxX(40.0)
 
     }
 
@@ -218,6 +221,7 @@ class MainActivity : AppCompatActivity() {
 
     // gestionnaire événement arduino pour communication thread UI
     val mHandler = object : Handler() {
+        @SuppressLint("HandlerLeak")
         override fun handleMessage(msg: Message) {
 
             if (running) {
@@ -232,6 +236,9 @@ class MainActivity : AppCompatActivity() {
                 textview_vitesse!!.setText("$TM  Km/h")
                 textview_distance!!.setText("$T  Km")
 
+                // Ajout graphique
+                graph2LastXValue += 1.0
+                mSeries2.appendData(DataPoint(graph2LastXValue, TM.toDouble()), true, 40)
 
                 /*  when (msg.what) {
                 MESSAGE_READ -> {
