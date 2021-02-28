@@ -56,7 +56,7 @@ class MainActivity : AppCompatActivity() {
     var mSeries2 : LineGraphSeries<DataPointInterface> = LineGraphSeries<DataPointInterface>()
     var graph2LastXValue = 5.0
 
-   // Bluetooth
+    // Bluetooth
     val MESSAGE_READ = 9999
     private var recDataString = ""
 
@@ -70,8 +70,9 @@ class MainActivity : AppCompatActivity() {
         GetUriForButtons()
 
         // Refresh horloge
-        Horloge()
+        MiseEnplaceThreadMajHorloge()
 
+        // Recuperation des références des objets sur l'interface
         chronometer = findViewById<Chronometer>(R.id.textView_chrono)
         chronometer!!.base = SystemClock.elapsedRealtime()
 
@@ -82,7 +83,22 @@ class MainActivity : AppCompatActivity() {
         textview_vitesse = findViewById<TextView>(R.id.textView_vitesse)
 
 
-        // TEST TEST TEST //
+        // TEST TEST TEST  Timer de random pour simuler le bluetooth//
+        SimulateBlutoothTimer()
+
+        // Création serie graphique
+        val graph: GraphView = findViewById(R.id.graph)
+        graph.addSeries(mSeries2)
+        graph.viewport.isXAxisBoundsManual = true
+        graph.viewport.setMinX(0.0)
+        graph.viewport.setMaxX(40.0)
+
+        // Mise à zéro interface chonométre au démarrage
+        ResetChronometer(null)
+
+    }
+
+    fun SimulateBlutoothTimer() {
         Timer().schedule(timerTask {
             Log.e("CLODO", "Dans le timer")
             var tm = (10..60).random()
@@ -98,22 +114,10 @@ class MainActivity : AppCompatActivity() {
             //mHandler!!.handleMessage(msg)
             mHandler!!.sendMessage(msg);
 
-        }, 2000, 2000)
-
-
-        // TEST GRAPHIQUE
-        val graph: GraphView = findViewById(R.id.graph)
-        //mSeries2 = LineGraphSeries<DataPointInterface>()
-        graph.addSeries(mSeries2)
-        graph.viewport.isXAxisBoundsManual = true
-        graph.viewport.setMinX(0.0)
-        graph.viewport.setMaxX(40.0)
-
+        }, 500, 500)
     }
 
-
-
-    private fun GetUriForButtons() {
+    fun GetUriForButtons() {
         val uri_play = "@android:drawable/ic_media_play" // where myresource (without the extension) is the file
         val uri_pause = "@android:drawable/ic_media_pause" // where myresource (without the extension) is the file
         imageResource_play = resources.getIdentifier(uri_play, null, packageName)
@@ -140,13 +144,17 @@ class MainActivity : AppCompatActivity() {
 
     fun ResetChronometer(v: View?) {
 
+        // Mise à zéro
+        textview_vitesse!!.setText("0  Km/h")
+        textview_distance!!.setText("0  Km")
+
         chronometer!!.base = SystemClock.elapsedRealtime()
         pauseOffset = 0
         running = true
         StartAndPauseChronometer(v)
     }
 
-    fun Horloge() {
+    fun MiseEnplaceThreadMajHorloge() {
         val thread: Thread = object : Thread() {
             override fun run() {
                 try {
