@@ -1,0 +1,4 @@
+    // Calcul //////////////////////
+    fun kmParHeure(tourParMinute: Int): Float {
+        return (tourParMinute * bicycleWheelCircumference / 1000) * 60;
+    }

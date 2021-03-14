@@ -4,6 +4,8 @@ package com.coures.renaud.sportnath
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
+import android.graphics.Color
+import android.graphics.Paint
 import android.os.Bundle
 import android.os.Handler
 import android.os.Message
@@ -45,7 +47,7 @@ class MainActivity : AppCompatActivity() {
     var distance = 0
 
     // FAKE
-    var nbtour = 0
+    var FakeNbTour = 0.01
     var timer:Timer? = null
 
     // Interface
@@ -53,8 +55,11 @@ class MainActivity : AppCompatActivity() {
     var textview_vitesse : TextView? = null
 
     // Graphique
-    var mSeries2 : LineGraphSeries<DataPointInterface> = LineGraphSeries<DataPointInterface>()
-    var graph2LastXValue = 5.0
+    var graph: GraphView? = null
+    var mSeriesVitesse : LineGraphSeries<DataPointInterface> = LineGraphSeries<DataPointInterface>()
+    var mSeriesDistance : LineGraphSeries<DataPointInterface> = LineGraphSeries<DataPointInterface>()
+    var graphLastXValue = 0.0
+
 
     // Bluetooth
     val MESSAGE_READ = 9999
@@ -82,39 +87,31 @@ class MainActivity : AppCompatActivity() {
         textview_distance = findViewById<TextView>(R.id.textView_distance)
         textview_vitesse = findViewById<TextView>(R.id.textView_vitesse)
 
+        graph = findViewById(R.id.graph)
+
 
         // TEST TEST TEST  Timer de random pour simuler le bluetooth//
         SimulateBlutoothTimer()
 
-        // Création serie graphique
-        val graph: GraphView = findViewById(R.id.graph)
-        graph.addSeries(mSeries2)
-        graph.viewport.isXAxisBoundsManual = true
-        graph.viewport.setMinX(0.0)
-        graph.viewport.setMaxX(40.0)
-
-        // Mise à zéro interface chonométre au démarrage
+           // Mise à zéro interface chonométre au démarrage
         ResetChronometer(null)
 
     }
 
     fun SimulateBlutoothTimer() {
         Timer().schedule(timerTask {
-            Log.e("CLODO", "Dans le timer")
+            //Log.e("CLODO", "Dans le timer")
             var tm = (10..60).random()
-            nbtour++
+            FakeNbTour += 0.01
 
             // https://stackoverflow.com/questions/34490859/textview-values-does-not-update-when-data-received-from-arduino
             var msg = mHandler!!.obtainMessage()
             var bundle: Bundle? = Bundle()
-            bundle!!.putString("TM", tm.toString());
-            bundle!!.putString("T", nbtour.toString());
-
+            bundle!!.putString("InfosArduino", "DEB;" + tm + ";" + FakeNbTour + ";FIN");
             msg.data = bundle
-            //mHandler!!.handleMessage(msg)
             mHandler!!.sendMessage(msg);
 
-        }, 500, 500)
+        }, 500, 100)
     }
 
     fun GetUriForButtons() {
@@ -144,16 +141,35 @@ class MainActivity : AppCompatActivity() {
 
     fun ResetChronometer(v: View?) {
 
+        // Création serie graphique
+        graph?.removeAllSeries()
+        graphLastXValue = 0.0
+        mSeriesVitesse.color =  Color.RED
+        graph?.addSeries(mSeriesVitesse)
+        graph?.addSeries(mSeriesDistance)
+        graph?.viewport?.isXAxisBoundsManual = true
+        graph?.viewport?.setMinX(0.0)
+        graph?.viewport?.setMaxX(40.0)
+        graph?.viewport?. = true
+
+        FakeNbTour = 0.0
+
+        mSeriesVitesse.resetData(arrayOf())
+        mSeriesDistance.resetData(arrayOf())
+
+
         // Mise à zéro
-        textview_vitesse!!.setText("0  Km/h")
-        textview_distance!!.setText("0  Km")
+        textview_vitesse!!.setText("-  Km/h")
+        textview_distance!!.setText("-  Km")
 
         chronometer!!.base = SystemClock.elapsedRealtime()
         pauseOffset = 0
         running = true
+
         StartAndPauseChronometer(v)
     }
 
+    // Mise à jour de la simple Horloge
     fun MiseEnplaceThreadMajHorloge() {
         val thread: Thread = object : Thread() {
             override fun run() {
@@ -174,7 +190,6 @@ class MainActivity : AppCompatActivity() {
 
         thread.start()
     }
-
 
     // Bluetooth ////////////////////////////////////////////////
 
@@ -222,10 +237,7 @@ class MainActivity : AppCompatActivity() {
 
     // Bluetooth ////////////////////////////////////////////////
 
-    // Calcul //////////////////////
-    fun kmParHeure(tourParMinute: Int): Float {
-        return (tourParMinute * bicycleWheelCircumference / 1000) * 60;
-    }
+
 
     // gestionnaire événement arduino pour communication thread UI
     val mHandler = object : Handler() {
@@ -233,20 +245,20 @@ class MainActivity : AppCompatActivity() {
         override fun handleMessage(msg: Message) {
 
             if (running) {
-                Log.e("CLODO", "Dans le handler")
+                //Log.e("CLODO", "Dans le handler")
 
                 val bundle = msg.data
+                var InfoBrutesArduino = bundle.getString("InfosArduino")!!
+                var infosArduino = InfoArduino(InfoBrutesArduino)
 
-                var TM = bundle.getString("TM")!!.toInt()
-                var T = bundle.getString("T")!!.toInt()
-
-
-                textview_vitesse!!.setText("$TM  Km/h")
-                textview_distance!!.setText("$T  Km")
+                textview_vitesse!!.setText("${infosArduino.vitesse.format(2)} Km/h")
+                textview_distance!!.setText("${infosArduino.distance.format(2)} Km")
 
                 // Ajout graphique
-                graph2LastXValue += 1.0
-                mSeries2.appendData(DataPoint(graph2LastXValue, TM.toDouble()), true, 40)
+                graphLastXValue += 1.0
+
+                mSeriesVitesse.appendData(DataPoint(graphLastXValue, infosArduino.vitesse.toDouble()), true, 40)
+                mSeriesDistance.appendData(DataPoint(graphLastXValue, infosArduino.distance.toDouble()), true, 40)
 
                 /*  when (msg.what) {
                 MESSAGE_READ -> {
@@ -271,7 +283,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-
+    private fun Float.format(digits: Int) = "%.${digits}f".format(this)
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.menu_main, menu)
@@ -288,3 +300,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 }
+
+
+
+
